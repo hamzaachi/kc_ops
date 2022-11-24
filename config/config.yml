@@ -1,0 +1,22 @@
+---
+kc_source:
+ url: https://box.eadn.dz/kcx20
+ username: admin
+ password: blahblah
+ realm: EADN-REALM
+ clients:
+   - asso-prod
+   - rh-prod
+ roles:
+   - asso-user
+
+kc_target:
+ url: https://box.eadn.dz/kcx22
+ username: admin
+ password: blahblah
+ realm: Go-Realm
+ clients:
+   - asso-prod
+   - rh-prod
+ roles:
+   - asso-user
