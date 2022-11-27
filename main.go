@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/Nerzal/gocloak/v12"
 	"scm.eadn.dz/DevOps/kc_ops/config"
@@ -46,9 +48,17 @@ func KC_AddClients(ctx context.Context, instance Instance, source, target *goclo
 }
 
 func main() {
-	var conf = &config.Config{}
+	ConfigFile := flag.String("path", "config/config.yml", "Path of the config file")
+	clients := flag.Bool("clients", false, "Whether to migrate Clients")
+	roles := flag.Bool("roles", false, "Whether to migrate Roles")
 
-	conf, err := config.New("config/config.yml")
+	flag.Parse()
+	if _, err := os.Stat(*ConfigFile); err != nil {
+		log.Fatalf("Error: File %s does not exist", *ConfigFile)
+	}
+
+	var conf = &config.Config{}
+	conf, err := config.New(*ConfigFile)
 	if err != nil {
 		panic("cannot load config file")
 	}
@@ -58,9 +68,14 @@ func main() {
 	ctx := context.Background()
 
 	target := gocloak.NewClient(instance.Kc_target.Url)
+	if *clients {
+		err = KC_AddClients(ctx, *instance, source, target)
+		if err != nil {
+			panic("Something is wrong, cannot add client" + err.Error())
+		}
+	}
 
-	err = KC_AddClients(ctx, *instance, source, target)
-	if err != nil {
-		panic("Something wrong, cannot add client" + err.Error())
+	if *roles {
+		fmt.Println("blah")
 	}
 }
