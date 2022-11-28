@@ -11,6 +11,34 @@ import (
 	"scm.eadn.dz/DevOps/kc_ops/config"
 )
 
+func Kc_AddRealmRoles(ctx context.Context, instance Instance, source, target *gocloak.GoCloak) error {
+	for _, role := range instance.Kc_source.Roles {
+
+		token, err := source.LoginAdmin(ctx, instance.Kc_source.Username, instance.Kc_source.Password, "master")
+		if err != nil {
+			fmt.Errorf("Something wrong with the credentials on source" + err.Error())
+			return err
+		}
+
+		log.Println("Getting Role Info...", role)
+		MyRole, err := instance.GetRealmRole(role, ctx, token.AccessToken, source)
+		if err != nil {
+			return err
+		}
+		token2, err2 := target.LoginAdmin(ctx, instance.Kc_target.Username, instance.Kc_target.Password, "master")
+		if err2 != nil {
+			fmt.Errorf("Something wrong with the credentials on target" + err2.Error())
+			return err2
+		}
+		log.Println("Adding Role ...", role)
+		err2 = instance.AddRealmRole(ctx, token2.AccessToken, target, MyRole)
+		if err2 != nil {
+			return err2
+		}
+	}
+	return nil
+}
+
 func KC_AddClients(ctx context.Context, instance Instance, source, target *gocloak.GoCloak) error {
 	for _, client := range instance.Kc_source.Clients {
 
@@ -71,11 +99,14 @@ func main() {
 	if *clients {
 		err = KC_AddClients(ctx, *instance, source, target)
 		if err != nil {
-			panic("Something is wrong, cannot add client" + err.Error())
+			panic("Something is wrong, cannot add clients: " + err.Error())
 		}
 	}
 
 	if *roles {
-		fmt.Println("blah")
+		err = Kc_AddRealmRoles(ctx, *instance, source, target)
+		if err != nil {
+			panic("Something is wrong, cannot add roles: " + err.Error())
+		}
 	}
 }
