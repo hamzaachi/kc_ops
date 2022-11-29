@@ -19,6 +19,7 @@ type kc_instance struct {
 	Realm    string   `yaml:"realm"`
 	Clients  []string `yaml:"clients",omitempty`
 	Roles    []string `yaml:"roles",omitempty`
+	Groups   []string `yaml:"groups",omitempty`
 }
 
 func New(path string) (s *Config, err error) {

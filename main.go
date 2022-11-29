@@ -75,10 +75,40 @@ func KC_AddClients(ctx context.Context, instance Instance, source, target *goclo
 	return nil
 }
 
+func Kc_AddGroups(ctx context.Context, instance Instance, source, target *gocloak.GoCloak) error {
+	for _, group := range instance.Kc_source.Groups {
+
+		token, err := source.LoginAdmin(ctx, instance.Kc_source.Username, instance.Kc_source.Password, "master")
+		if err != nil {
+			fmt.Errorf("Something wrong with the credentials on source" + err.Error())
+			return err
+		}
+
+		log.Println("Getting Group Info...", group)
+		MyGroup, err := instance.GetGroup(group, ctx, token.AccessToken, source)
+		if err != nil {
+			return err
+		}
+		token2, err2 := target.LoginAdmin(ctx, instance.Kc_target.Username, instance.Kc_target.Password, "master")
+		if err2 != nil {
+			fmt.Errorf("Something wrong with the credentials on target" + err2.Error())
+			return err2
+		}
+		log.Println("Adding Group ...", group)
+
+		err2 = instance.AddGroup(ctx, token2.AccessToken, target, MyGroup)
+		if err2 != nil {
+			return err2
+		}
+	}
+	return nil
+}
+
 func main() {
 	ConfigFile := flag.String("path", "config/config.yml", "Path of the config file")
 	clients := flag.Bool("clients", false, "Whether to migrate Clients")
 	roles := flag.Bool("roles", false, "Whether to migrate Roles")
+	groups := flag.Bool("groups", false, "Whether to migrate Groups")
 
 	flag.Parse()
 	if _, err := os.Stat(*ConfigFile); err != nil {
@@ -108,5 +138,14 @@ func main() {
 		if err != nil {
 			panic("Something is wrong, cannot add roles: " + err.Error())
 		}
+	}
+
+	if *groups {
+
+		err := Kc_AddGroups(ctx, *instance, source, target)
+		if err != nil {
+			panic(err.Error())
+		}
+
 	}
 }

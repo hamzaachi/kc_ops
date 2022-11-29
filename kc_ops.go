@@ -103,3 +103,39 @@ func (c *Instance) AddClient(ctx context.Context, token string, target *gocloak.
 	}
 	return nil
 }
+
+func (c *Instance) GetGroup(Name string, ctx context.Context, token string, source *gocloak.GoCloak) (*gocloak.Group, error) {
+	groups, err := source.GetGroups(
+		ctx,
+		token,
+		c.Kc_source.Realm,
+		gocloak.GetGroupsParams{
+			Search: &Name,
+		},
+	)
+	if err != nil {
+		fmt.Errorf("Cannot get Group ID Error: %s", err.Error())
+		return nil, err
+	}
+
+	Group, err := source.GetGroup(ctx, token, c.Kc_source.Realm, *groups[0].ID)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot get Group Info Error: %s", err.Error())
+	}
+	return Group, nil
+}
+
+func (c *Instance) AddGroup(ctx context.Context, token string, target *gocloak.GoCloak, Group *gocloak.Group) error {
+	//for _, g := range *Group.SubGroups {
+	//	_, err := target.CreateGroup(ctx, token, c.Kc_target.Realm, g)
+	//	if err != nil {
+	//		return fmt.Errorf("nop: %s", err.Error())
+	//	}
+	//}
+
+	_, err := target.CreateGroup(ctx, token, c.Kc_target.Realm, *Group)
+	if err != nil {
+		return fmt.Errorf("Cannot Create Group Error: %s", err.Error())
+	}
+	return nil
+}

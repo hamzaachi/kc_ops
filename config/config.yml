@@ -2,7 +2,7 @@
 kc_source:
  url: https://box.eadn.dz/kcx20
  username: admin
- password: blahblah
+ password: Azerty123654
  realm: EADN-REALM
  clients:
    - asso-prod
@@ -10,11 +10,13 @@ kc_source:
  roles:
    - asso_user
    - at_user
+ groups:
+   - ADMIN
 
 kc_target:
- url: https://box.eadn.dz/kcx22
+ url: https://demo.eadn.dz/dgb_auth
  username: admin
- password: blahblah
+ password: Azerty123
  realm: Go-Realm
  clients:
    - asso-prod
@@ -22,3 +24,5 @@ kc_target:
  roles:
    - asso_user
    - at_user
+ groups:
+   - ADMIN
