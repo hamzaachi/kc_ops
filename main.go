@@ -95,7 +95,7 @@ func Kc_AddGroups(ctx context.Context, instance Instance, source, target *gocloa
 			return err2
 		}
 		log.Println("Adding Group ...", group)
-
+		MyGroup.ID = nil
 		err2 = instance.AddGroup(ctx, token2.AccessToken, target, MyGroup)
 		if err2 != nil {
 			return err2

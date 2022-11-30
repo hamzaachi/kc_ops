@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/Nerzal/gocloak/v12"
 	"scm.eadn.dz/DevOps/kc_ops/config"
@@ -98,7 +99,6 @@ func (c *Instance) AddClient(ctx context.Context, token string, target *gocloak.
 		return err
 	}
 	for _, Role := range Roles {
-
 		target.CreateClientRole(ctx, token, c.Kc_target.Realm, *Client.ID, *Role)
 	}
 	return nil
@@ -124,18 +124,34 @@ func (c *Instance) GetGroup(Name string, ctx context.Context, token string, sour
 	}
 	return Group, nil
 }
+func (c *Instance) AddChildGroup(ctx context.Context, token string, target *gocloak.GoCloak, parent string, Group *gocloak.Group) error {
 
+	log.Println("Adding subgroup: ", *Group.Name)
+	Group.ID = nil
+	ID, err := target.CreateChildGroup(ctx, token, c.Kc_target.Realm, parent, *Group)
+	if err != nil {
+		return fmt.Errorf("Cannot Create SubGroup Error: %s", err.Error())
+	}
+	if len(*Group.SubGroups) > 0 {
+		for _, group := range *Group.SubGroups {
+			c.AddChildGroup(ctx, token, target, ID, &group)
+		}
+	}
+	return nil
+}
 func (c *Instance) AddGroup(ctx context.Context, token string, target *gocloak.GoCloak, Group *gocloak.Group) error {
-	//for _, g := range *Group.SubGroups {
-	//	_, err := target.CreateGroup(ctx, token, c.Kc_target.Realm, g)
-	//	if err != nil {
-	//		return fmt.Errorf("nop: %s", err.Error())
-	//	}
-	//}
 
-	_, err := target.CreateGroup(ctx, token, c.Kc_target.Realm, *Group)
+	ID, err := target.CreateGroup(ctx, token, c.Kc_target.Realm, *Group)
 	if err != nil {
 		return fmt.Errorf("Cannot Create Group Error: %s", err.Error())
+	}
+	if len(*Group.SubGroups) > 0 {
+		for _, group := range *Group.SubGroups {
+			err := c.AddChildGroup(ctx, token, target, ID, &group)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
