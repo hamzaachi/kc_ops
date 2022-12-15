@@ -21,7 +21,7 @@ func Kc_AddRealmRoles(ctx context.Context, instance Instance, source, target *go
 		}
 
 		log.Println("Getting Role Info...", role)
-		MyRole, err := instance.GetRealmRole(role, ctx, token.AccessToken, source)
+		MyRole, err := instance.GetRealmRole(role, ctx, token.AccessToken, instance.Kc_source.Realm, source)
 		if err != nil {
 			return err
 		}

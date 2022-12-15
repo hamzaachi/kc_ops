@@ -5,6 +5,10 @@ kc_source:
  password: blahblah
  realm: EADN-REALM
  clients:
+   - eadn-client-local
+   - eadn-client
+   - eadn-client-asso-prod
+   - eadn-client-local-asso
    - asso-prod
    - rh-prod
  roles:
@@ -12,6 +16,7 @@ kc_source:
    - asso_prod_user
    - at_user
  groups:
+   - ADMIN
    - association_groups
 
 kc_target:
@@ -20,6 +25,10 @@ kc_target:
  password: blahblah
  realm: Go-Realm
  clients:
+   - eadn-client-local
+   - eadn-client
+   - eadn-client-asso-prod
+   - eadn-client-local-asso
    - asso-prod
    - rh-prod
  roles:
@@ -27,4 +36,5 @@ kc_target:
    - asso_prod_user
    - at_user
  groups:
+   - ADMIN
    - association_groups
