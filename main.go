@@ -134,7 +134,7 @@ func main() {
 	}
 
 	if *roles {
-		err = Kc_AddRealmRoles(ctx, *instance, source, target)
+		err := Kc_AddRealmRoles(ctx, *instance, source, target)
 		if err != nil {
 			panic("Something is wrong, cannot add roles: " + err.Error())
 		}
@@ -144,7 +144,7 @@ func main() {
 
 		err := Kc_AddGroups(ctx, *instance, source, target)
 		if err != nil {
-			panic(err.Error())
+			panic(err)
 		}
 
 	}

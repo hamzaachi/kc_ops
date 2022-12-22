@@ -39,7 +39,7 @@ func (c *Instance) GetClientID(Name string, ctx context.Context, token string, r
 			ClientID: &Name,
 		},
 	)
-	if err != nil {
+	if err != nil || len(clients) == 0 {
 		fmt.Errorf("Cannot get Client ID Error: %s", err)
 		return "", err
 	}
@@ -131,17 +131,18 @@ func (c *Instance) AddChildGroup(ctx context.Context, token string, target *gocl
 	Group.ID = nil
 	ID, err := target.CreateChildGroup(ctx, token, c.Kc_target.Realm, parent, *Group)
 	if err != nil {
-		return fmt.Errorf("Cannot Create SubGroup Error: %s", err.Error())
+		return fmt.Errorf("Cannot Create SubGroup Error: %s %s", *Group.Name, err)
 	}
 
 	if len(*Group.ClientRoles) > 0 {
-		err = c.SetAssignedClientRoles(ctx, token, ID, target, Group)
+
+		err := c.SetAssignedClientRoles(ctx, token, ID, target, Group)
 		if err != nil {
 			return err
 		}
 	}
 	if len(*Group.RealmRoles) > 0 {
-		err = c.SetAssignedRealmRoles(ctx, token, ID, target, Group)
+		err := c.SetAssignedRealmRoles(ctx, token, ID, target, Group)
 		if err != nil {
 			return err
 		}
@@ -160,22 +161,28 @@ func (c *Instance) SetAssignedClientRoles(ctx context.Context, token string, Gro
 
 	for client, myroles := range *Group.ClientRoles {
 		roles := []gocloak.Role{}
+
 		ClientID, err := c.GetClientID(client, ctx, token, c.Kc_target.Realm, target)
 		if err != nil {
 			return err
 		}
-		log.Println("Assigning Roles for Client: ", client)
-		for _, r := range myroles {
-			role, err := target.GetClientRole(ctx, token, c.Kc_target.Realm, ClientID, r)
-			if err != nil {
-				return fmt.Errorf("Cannot Get Role: %s", err.Error())
+
+		if len(myroles) > 0 {
+			for _, r := range myroles {
+				role, err := target.GetClientRole(ctx, token, c.Kc_target.Realm, ClientID, r)
+				if err != nil {
+					return fmt.Errorf("Cannot Get Role!: %s %s %s", r, client, err)
+				}
+				roles = append(roles, *role)
 			}
-			roles = append(roles, *role)
 		}
-		err = target.AddClientRolesToGroup(ctx, token, c.Kc_target.Realm, ClientID, GroupID, roles)
-		if err != nil {
-			return fmt.Errorf("Cannot Add Roles To Group Error: %s", err.Error())
+
+		log.Println("Assigning Roles for Client: ", client)
+		err2 := target.AddClientRolesToGroup(ctx, token, c.Kc_target.Realm, ClientID, GroupID, roles)
+		if err2 != nil {
+			return fmt.Errorf("Cannot Add Roles To Group Error: %s", err2.Error())
 		}
+
 	}
 	return nil
 }
@@ -193,7 +200,6 @@ func (c *Instance) SetAssignedRealmRoles(ctx context.Context, token string, Grou
 		roles = append(roles, *r)
 	}
 
-	log.Println("Assigning Role ")
 	err := target.AddRealmRoleToGroup(ctx, token, c.Kc_target.Realm, GroupID, roles)
 	if err != nil {
 		return fmt.Errorf("Cannot Add Roles To Group Error: %s", err.Error())
@@ -211,13 +217,13 @@ func (c *Instance) AddGroup(ctx context.Context, token string, target *gocloak.G
 	}
 
 	if len(*Group.ClientRoles) > 0 {
-		err = c.SetAssignedClientRoles(ctx, token, ID, target, Group)
+		err := c.SetAssignedClientRoles(ctx, token, ID, target, Group)
 		if err != nil {
 			return err
 		}
 	}
 	if len(*Group.ClientRoles) > 0 {
-		err = c.SetAssignedRealmRoles(ctx, token, ID, target, Group)
+		err := c.SetAssignedRealmRoles(ctx, token, ID, target, Group)
 		if err != nil {
 			return err
 		}
