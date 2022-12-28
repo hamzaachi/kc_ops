@@ -13,11 +13,11 @@ type Instance struct {
 	*config.Config
 }
 
-func (c *Instance) GetGroup(Name string, ctx context.Context, token string, source *gocloak.GoCloak) (*gocloak.Group, error) {
+func (c *Instance) GetGroup(Name string, ctx context.Context, token string, realm string, source *gocloak.GoCloak) (*gocloak.Group, error) {
 	groups, err := source.GetGroups(
 		ctx,
 		token,
-		c.Kc_source.Realm,
+		realm,
 		gocloak.GetGroupsParams{
 			Search: &Name,
 		},
@@ -27,43 +27,11 @@ func (c *Instance) GetGroup(Name string, ctx context.Context, token string, sour
 		return nil, err
 	}
 
-	Group, err := source.GetGroup(ctx, token, c.Kc_source.Realm, *groups[0].ID)
+	Group, err := source.GetGroup(ctx, token, realm, *groups[0].ID)
 	if err != nil {
 		return nil, fmt.Errorf("Cannot get Group Info Error: %s", err.Error())
 	}
 	return Group, nil
-}
-
-func (c *Instance) AddChildGroup(ctx context.Context, token string, target *gocloak.GoCloak, parent string, Group *gocloak.Group) error {
-
-	log.Println("Adding subgroup: ", *Group.Name)
-	Group.ID = nil
-	ID, err := target.CreateChildGroup(ctx, token, c.Kc_target.Realm, parent, *Group)
-	if err != nil {
-		return fmt.Errorf("Cannot Create SubGroup Error: %s %s", *Group.Name, err)
-	}
-
-	if len(*Group.ClientRoles) > 0 {
-
-		err := c.SetAssignedClientRoles(ctx, token, ID, target, Group)
-		if err != nil {
-			return err
-		}
-	}
-	if len(*Group.RealmRoles) > 0 {
-		err := c.SetAssignedRealmRoles(ctx, token, ID, target, Group)
-		if err != nil {
-			return err
-		}
-	}
-
-	if len(*Group.SubGroups) > 0 {
-		for _, group := range *Group.SubGroups {
-			c.AddChildGroup(ctx, token, target, ID, &group)
-		}
-	}
-
-	return nil
 }
 
 func (c *Instance) SetAssignedClientRoles(ctx context.Context, token string, GroupID string, target *gocloak.GoCloak, Group *gocloak.Group) error {
@@ -112,6 +80,38 @@ func (c *Instance) SetAssignedRealmRoles(ctx context.Context, token string, Grou
 	err := target.AddRealmRoleToGroup(ctx, token, c.Kc_target.Realm, GroupID, roles)
 	if err != nil {
 		return fmt.Errorf("Cannot Add Roles To Group Error: %s", err.Error())
+	}
+
+	return nil
+}
+
+func (c *Instance) AddChildGroup(ctx context.Context, token string, target *gocloak.GoCloak, parent string, Group *gocloak.Group) error {
+
+	log.Println("Adding subgroup: ", *Group.Name)
+	Group.ID = nil
+	ID, err := target.CreateChildGroup(ctx, token, c.Kc_target.Realm, parent, *Group)
+	if err != nil {
+		return fmt.Errorf("Cannot Create SubGroup Error: %s %s", *Group.Name, err)
+	}
+
+	if len(*Group.ClientRoles) > 0 {
+
+		err := c.SetAssignedClientRoles(ctx, token, ID, target, Group)
+		if err != nil {
+			return err
+		}
+	}
+	if len(*Group.RealmRoles) > 0 {
+		err := c.SetAssignedRealmRoles(ctx, token, ID, target, Group)
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(*Group.SubGroups) > 0 {
+		for _, group := range *Group.SubGroups {
+			c.AddChildGroup(ctx, token, target, ID, &group)
+		}
 	}
 
 	return nil

@@ -25,12 +25,12 @@ func (c *Instance) GetClientID(Name string, ctx context.Context, token string, r
 
 }
 
-func (c *Instance) GetClient(Name string, ctx context.Context, token string, source *gocloak.GoCloak) (Client *gocloak.Client, err error) {
+func (c *Instance) GetClient(Name string, ctx context.Context, token string, realm string, source *gocloak.GoCloak) (Client *gocloak.Client, err error) {
 
 	clients, err := source.GetClients(
 		ctx,
 		token,
-		c.Kc_source.Realm,
+		realm,
 		gocloak.GetClientsParams{
 			ClientID: &Name,
 		},
@@ -39,7 +39,10 @@ func (c *Instance) GetClient(Name string, ctx context.Context, token string, sou
 		fmt.Errorf("Cannot get Client ID Error: %s", err)
 		return nil, err
 	}
-	Client = clients[0]
+
+	if len(clients) > 0 {
+		Client = clients[0]
+	}
 	return Client, nil
 
 }
@@ -55,7 +58,6 @@ func (c *Instance) GetClientRoles(Name string, ctx context.Context, token string
 
 	MyRoles, err := source.GetClientRoles(ctx, token, realm, ID, gocloak.GetRoleParams{})
 	if err != nil {
-		fmt.Errorf("Cannot get roles error: %", err)
 		return nil, err
 	}
 	for _, role := range MyRoles {
@@ -73,11 +75,27 @@ func (c *Instance) AddClient(ctx context.Context, token string, target *gocloak.
 
 	_, err := target.CreateClient(ctx, token, c.Kc_target.Realm, *Client)
 	if err != nil {
-		fmt.Println("Oh, no. Cannot create Client on Target: %s", err.Error())
 		return err
 	}
 	for _, Role := range Roles {
 		target.CreateClientRole(ctx, token, c.Kc_target.Realm, *Client.ID, *Role)
 	}
+	return nil
+}
+
+func (c *Instance) UpdateClient(ctx context.Context, token string, target *gocloak.GoCloak, Client *gocloak.Client, Roles []*gocloak.Role) error {
+	err := target.UpdateClient(ctx, token, c.Kc_target.Realm, *Client)
+	if err != nil {
+		return err
+	}
+	for _, Role := range Roles {
+		target.CreateClientRole(ctx, token, c.Kc_target.Realm, *Client.ID, *Role)
+		err := target.UpdateRole(ctx, token, c.Kc_target.Realm, *Client.ID, *Role)
+		if err != nil {
+			return err
+		}
+
+	}
+
 	return nil
 }

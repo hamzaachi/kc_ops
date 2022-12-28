@@ -1,26 +1,28 @@
 ---
 kc_source:
- url: https://auth.eadn.dz/auth
+ url: https://demo.eadn.dz/dgb_auth
  username: admin
  password: blahblah
- realm: INVEST-REALM
+ realm: DGB-REALM
  clients:
-   - invest-backend
-   - invest-frontend
+   - dgb-pemp-backend
+   - dgb-pemp-frontend
  roles:
-   - invest_user
+   - frontend_realm_role
+   - backend_realm_role
  groups:
-   - invest_groups
+   - dgb_pemp_groups
 
 kc_target:
- url: https://demo.eadn.dz/dgb_auth
+ url: https://box.eadn.dz/kcx20
  username: admin
  password: blahblah
  realm: Go-Realm
  clients:
-   - invest-backend
-   - invest-frontend
+   - dgb-pemp-backend
+   - dgb-pemp-frontend
  roles:
-   - invest_user
+   - frontend_realm_role
+   - backend_realm_role
  groups:
-   - invest_groups
+   - dgb_pemp_groups

@@ -22,3 +22,11 @@ func (c *Instance) AddRealmRole(ctx context.Context, token string, target *goclo
 	}
 	return nil
 }
+
+func (c *Instance) UdateRealmRole(ctx context.Context, token string, target *gocloak.GoCloak, name string, Role *gocloak.Role) error {
+	err := target.UpdateRealmRole(ctx, token, c.Kc_target.Realm, name, *Role)
+	if err != nil {
+		return fmt.Errorf("Cannot Update Realm Role Error: %s", err)
+	}
+	return nil
+}
