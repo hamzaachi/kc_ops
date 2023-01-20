@@ -156,29 +156,29 @@ func main() {
 	ctx := context.Background()
 
 	target := gocloak.NewClient(instance.Kc_target.Url)
-	if *clients {
+	switch {
+	case *clients:
 		err = KC_AddClients(ctx, *instance, source, target)
 		if err != nil {
 			panic("Something is wrong, cannot add clients: " + err.Error())
 		}
-	}
 
-	if *roles {
+	case *roles:
 		err := Kc_AddRealmRoles(ctx, *instance, source, target)
 		if err != nil {
 			panic("Something is wrong, cannot add roles: " + err.Error())
 		}
-	}
 
-	if *groups {
+	case *groups:
 
 		err := Kc_AddGroups(ctx, *instance, source, target)
 		if err != nil {
 			panic(err)
 		}
+	default:
+		flag.Usage()
 
 	}
-
 	switch cmd {
 	case "update":
 		updateCMD.Parse(os.Args[2:])
