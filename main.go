@@ -148,7 +148,7 @@ func main() {
 	var conf = &config.Config{}
 	conf, err := config.New(*ConfigFile)
 	if err != nil {
-		panic("cannot load config file")
+		panic("Cannot load config file")
 	}
 	instance := &Instance{conf}
 
@@ -162,19 +162,20 @@ func main() {
 		if err != nil {
 			panic("Something is wrong, cannot add clients: " + err.Error())
 		}
-
+		os.Exit(0)
 	case *roles:
 		err := Kc_AddRealmRoles(ctx, *instance, source, target)
 		if err != nil {
 			panic("Something is wrong, cannot add roles: " + err.Error())
 		}
-
+		os.Exit(0)
 	case *groups:
 
 		err := Kc_AddGroups(ctx, *instance, source, target)
 		if err != nil {
 			panic(err)
 		}
+		os.Exit(0)
 	default:
 		flag.Usage()
 
