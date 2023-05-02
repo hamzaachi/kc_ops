@@ -15,7 +15,7 @@ FROM alpine:latest
 RUN apk --no-cache add \
     ca-certificates \
     git
-    
+
 RUN   addgroup -g 70 -S kc_ops; \
 	adduser -u 70 -S -D -G kc_ops -H -h /app -s /bin/sh kc_ops;
 

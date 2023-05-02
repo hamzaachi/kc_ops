@@ -1,6 +1,6 @@
 ---
 kc_source:
- url: https://demo.eadn.dz/dgb_auth
+ url: https://demo.blah.dz/dgb_auth
  username: admin
  password: blahblah
  realm: DGB-REALM
@@ -14,7 +14,7 @@ kc_source:
    - dgb_pemp_groups
 
 kc_target:
- url: https://box.eadn.dz/kcx20
+ url: https://box.blah.dz/kcx20
  username: admin
  password: blahblah
  realm: Go-Realm
